@@ -11,7 +11,14 @@ jobs:
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
       - uses: gradle/actions/setup-gradle@v4
         with: {gradle-version: '8.7'}
-      - run: gradle assembleDebug --no-daemon && cp app/build/outputs/apk/debug/app-debug.apk RogueWest.apk
+      - name: Build
+        run: |
+          F=$(find . -name settings.gradle -not -path './.git/*' | head -1)
+          if [ -z "$F" ]; then echo "settings.gradle не найден - загрузи все файлы проекта"; ls -R | head -50; exit 1; fi
+          cd "$(dirname "$F")"
+          echo "Папка проекта: $(pwd)"
+          gradle assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/RogueWest.apk"
       - uses: actions/upload-artifact@v4
         with:
           name: RogueWest-apk
